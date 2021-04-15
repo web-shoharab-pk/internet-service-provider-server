@@ -1,9 +1,10 @@
 const express = require('express')
-const app = express() 
+const app = express()
 const cors = require('cors')
-require('dotenv').config();
 const MongoClient = require('mongodb').MongoClient;
-const port = process.env.PORT ||  5500;
+require('dotenv').config();
+const ObjectID = require('mongodb').ObjectID
+const port = process.env.PORT || 5500;
 
 app.use(express.json());
 app.use(cors());
@@ -15,13 +16,60 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 client.connect(err => {
   const serviceCollection = client.db(`${process.env.DB_NAME}`).collection("services");
-  app.get('/', (req, res) => {
-    res.send('Hello World!')
-   
+  const adminCollection = client.db(`${process.env.DB_NAME}`).collection("adminInfo");
+  const orderCollection = client.db(`${process.env.DB_NAME}`).collection("bookingDetails");
+
+
+  app.post('/addAdmin', (req, res) => {
+    const adminInfo = req.body;
+    console.log(adminInfo);
+    adminCollection.insertOne(adminInfo)
+      .then(result => {
+        res.send(result.insertedCount > 0)
+      })
   })
-  console.log("database connected", uri);
-  // perform actions on the collection object
-  client.close();
+  app.post('/addService', (req, res) => {
+    const serviceInfo = req.body;
+    serviceCollection.insertOne(serviceInfo)
+      .then(result => {
+        res.send(result.insertedCount > 0)
+        console.log(result);
+      })
+  })
+  app.post('/serviceBooking', (req, res) => {
+    const bookingData = req.body;
+    console.log(bookingData);
+  })
+
+  app.get('/services', (req, res) => {
+    serviceCollection.find({})
+      .toArray((error, documents) => {
+        res.send(documents)
+      })
+
+    app.post('/order&paymentDetails', (req, res) => {
+      const orderDetails = req.body;
+      orderCollection.insertOne(orderDetails)
+        .then(result => {
+          res.send(result.insertedCount > 0)
+        })
+    })
+  })
+
+  app.get('/bookingService/:id', (req, res) => {
+    serviceCollection.find({ _id: ObjectID(req.params.id) })
+      .toArray((error, data) => {
+        res.send(data)
+      })
+  })
+
+  app.delete('/deleteService/:id', (req, res) => {
+    serviceCollection.deleteOne({ _id: ObjectID(req.params.id) })
+    .then(result => { 
+       res.send(result. deletedCount > 0) 
+    })
+  })
+
 });
 
 
