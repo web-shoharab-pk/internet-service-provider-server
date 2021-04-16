@@ -18,6 +18,7 @@ client.connect(err => {
   const serviceCollection = client.db(`${process.env.DB_NAME}`).collection("services");
   const adminCollection = client.db(`${process.env.DB_NAME}`).collection("adminInfo");
   const orderCollection = client.db(`${process.env.DB_NAME}`).collection("bookingDetails");
+  const reviewCollection = client.db(`${process.env.DB_NAME}`).collection("serviceReview");
 
 
   app.post('/addAdmin', (req, res) => {
@@ -46,14 +47,22 @@ client.connect(err => {
       .toArray((error, documents) => {
         res.send(documents)
       })
+  })
 
-    app.post('/order&paymentDetails', (req, res) => {
-      const orderDetails = req.body;
-      orderCollection.insertOne(orderDetails)
-        .then(result => {
-          res.send(result.insertedCount > 0)
-        })
-    })
+  app.post('/order&paymentDetails', (req, res) => {
+    const orderDetails = req.body;
+    orderCollection.insertOne(orderDetails)
+      .then(result => {
+        res.send(result.insertedCount > 0)
+      })
+  })
+
+  app.post('/getReview', (req, res) => {
+    const review = req.body;
+    reviewCollection.insertOne(review)
+      .then(result => {
+        res.send(result.insertedCount > 0)
+      })
   })
 
   app.get('/bookingService/:id', (req, res) => {
@@ -63,11 +72,45 @@ client.connect(err => {
       })
   })
 
+
+  app.get('/reviews', (req, res) => {
+    reviewCollection.find({})
+      .toArray((error, data) => {
+        res.send(data)
+      })
+  })
+
+
+  app.get('/allOrder', (req, res) => {
+    orderCollection.find({})
+      .toArray((error, data) => {
+        res.send(data)
+      })
+  })
+
+  app.get('/bookingListById/:email', (req, res) => {
+    orderCollection.find({ userEmail: req.params.email })
+      .toArray((error, data) => {
+        res.send(data)
+      })
+  })
+
+
   app.delete('/deleteService/:id', (req, res) => {
     serviceCollection.deleteOne({ _id: ObjectID(req.params.id) })
-    .then(result => { 
-       res.send(result. deletedCount > 0) 
-    })
+      .then(result => {
+        res.send(result.deletedCount > 0)
+      })
+  })
+
+  app.patch('/statusUpdateById/:id', (req, res) => { 
+    orderCollection.updateOne({ _id: ObjectID(req.params.id) },
+      {
+        $set: { orderStatus: req.body.inputStatus }
+      })
+      .then(result => {
+        res.send(result.modifiedCount > 0)
+      })
   })
 
 });
