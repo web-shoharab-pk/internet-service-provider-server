@@ -124,7 +124,9 @@ client.connect(err => {
 
 });
 
-
+app.get('/', (req, res) => {
+  res.send('hi boss, i am internet service website database API (AK.email)')
+})
 
 
 
