@@ -65,6 +65,15 @@ client.connect(err => {
       })
   })
 
+
+  app.post('/adminAccess', (req, res) => {
+    const email = req.body.email;
+    adminCollection.find({ email: email })
+      .toArray((error, admin) => {
+        res.send(admin.length > 0)
+      }) 
+  })
+
   app.get('/bookingService/:id', (req, res) => {
     serviceCollection.find({ _id: ObjectID(req.params.id) })
       .toArray((error, data) => {
@@ -103,7 +112,7 @@ client.connect(err => {
       })
   })
 
-  app.patch('/statusUpdateById/:id', (req, res) => { 
+  app.patch('/statusUpdateById/:id', (req, res) => {
     orderCollection.updateOne({ _id: ObjectID(req.params.id) },
       {
         $set: { orderStatus: req.body.inputStatus }
